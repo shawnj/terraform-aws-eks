@@ -92,18 +92,18 @@ output "oidc_provider_arn" {
 #   )
 # }
 
-output "workers_user_data" {
-  description = "User data of worker groups"
-  value = concat(
-    data.template_file.userdata.*.rendered,
-    data.template_file.launch_template_userdata.*.rendered,
-  )
-}
+# output "workers_user_data" {
+#   description = "User data of worker groups"
+#   value = concat(
+#     data.template_file.userdata.*.rendered,
+#     data.template_file.launch_template_userdata.*.rendered,
+#   )
+# }
 
-output "workers_default_ami_id" {
-  description = "ID of the default worker group AMI"
-  value       = data.aws_ami.eks_worker.id
-}
+# output "workers_default_ami_id" {
+#   description = "ID of the default worker group AMI"
+#   value       = data.aws_ami.eks_worker.id
+# }
 
 # output "workers_launch_template_ids" {
 #   description = "IDs of the worker launch templates."

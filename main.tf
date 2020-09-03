@@ -104,6 +104,59 @@ resource "random_string" "suffix" {
   special = false
 }
 
+data "template_file" "launch_template_userdata" {
+  template = file("./eks/templates/userdata.sh.tpl")
+
+  vars = {
+    cluster_name        = local.cluster_name
+    endpoint            = module.eks.cluster_endpoint
+    cluster_auth_base64 = module.eks.cluster_certificate_authority_data
+
+    bootstrap_extra_args = ""
+    kubelet_extra_args = ""
+    }
+}
+
+// this is mostly the default LT that AWS would create if you dont specify your own
+resource "aws_launch_template" "default" {
+  name_prefix     = "${local.cluster_name}-"
+  description     = "Default Launch-Template for clusters"
+  update_default_version = true
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size           = 100
+      volume_type           = "gp2"
+      delete_on_termination = true
+    }
+  }
+
+  ebs_optimized = true // some instance types dont support it, so check when changing type
+
+  #image_id      = "ami-00341e507eb458a09" //TODO use our custom AMI
+  instance_type = "t3.micro"
+
+  monitoring {
+    enabled = true
+  }
+
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+    security_groups             = [module.eks.worker_security_group_id]
+  }
+
+  user_data = base64encode(
+    data.template_file.launch_template_userdata.rendered,
+  )
+
+  lifecycle {
+    create_before_destroy = true
+  }  
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 2.6"
@@ -159,6 +212,10 @@ module "eks" {
         GithubRepo  = "terraform-aws-eks"
         GithubOrg   = "terraform-aws-modules"
       }
+
+      launch_template_id = aws_launch_template.default.id
+      launch_template_version = aws_launch_template.default.default_version       
+
       additional_tags = {
         ExtraTag = "example"
       }

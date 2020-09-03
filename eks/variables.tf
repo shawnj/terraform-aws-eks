@@ -89,23 +89,23 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "worker_groups" {
-  description = "A list of maps defining worker group configurations to be defined using AWS Launch Configurations. See workers_group_defaults for valid keys."
-  type        = any
-  default     = []
-}
+# variable "worker_groups" {
+#   description = "A list of maps defining worker group configurations to be defined using AWS Launch Configurations. See workers_group_defaults for valid keys."
+#   type        = any
+#   default     = []
+# }
 
-variable "workers_group_defaults" {
-  description = "Override default values for target groups. See workers_group_defaults_defaults in local.tf for valid keys."
-  type        = any
-  default     = {}
-}
+# variable "workers_group_defaults" {
+#   description = "Override default values for target groups. See workers_group_defaults_defaults in local.tf for valid keys."
+#   type        = any
+#   default     = {}
+# }
 
-variable "worker_groups_launch_template" {
-  description = "A list of maps defining worker group configurations to be defined using AWS Launch Templates. See workers_group_defaults for valid keys."
-  type        = any
-  default     = []
-}
+# variable "worker_groups_launch_template" {
+#   description = "A list of maps defining worker group configurations to be defined using AWS Launch Templates. See workers_group_defaults for valid keys."
+#   type        = any
+#   default     = []
+# }
 
 variable "worker_security_group_id" {
   description = "If provided, all workers will be attached to this security group. If not given, a security group will be created with necessary ingress/egress to work with the EKS cluster."
@@ -113,35 +113,35 @@ variable "worker_security_group_id" {
   default     = ""
 }
 
-variable "worker_ami_name_filter" {
-  description = "Name filter for AWS EKS worker AMI. If not provided, the latest official AMI for the specified 'cluster_version' is used."
-  type        = string
-  default     = ""
-}
+# variable "worker_ami_name_filter" {
+#   description = "Name filter for AWS EKS worker AMI. If not provided, the latest official AMI for the specified 'cluster_version' is used."
+#   type        = string
+#   default     = ""
+# }
 
-variable "worker_ami_name_filter_windows" {
-  description = "Name filter for AWS EKS Windows worker AMI. If not provided, the latest official AMI for the specified 'cluster_version' is used."
-  type        = string
-  default     = ""
-}
+# variable "worker_ami_name_filter_windows" {
+#   description = "Name filter for AWS EKS Windows worker AMI. If not provided, the latest official AMI for the specified 'cluster_version' is used."
+#   type        = string
+#   default     = ""
+# }
 
-variable "worker_ami_owner_id" {
-  description = "The ID of the owner for the AMI to use for the AWS EKS workers. Valid values are an AWS account ID, 'self' (the current account), or an AWS owner alias (e.g. 'amazon', 'aws-marketplace', 'microsoft')."
-  type        = string
-  default     = "602401143452" // The ID of the owner of the official AWS EKS AMIs.
-}
+# variable "worker_ami_owner_id" {
+#   description = "The ID of the owner for the AMI to use for the AWS EKS workers. Valid values are an AWS account ID, 'self' (the current account), or an AWS owner alias (e.g. 'amazon', 'aws-marketplace', 'microsoft')."
+#   type        = string
+#   default     = "602401143452" // The ID of the owner of the official AWS EKS AMIs.
+# }
 
-variable "worker_ami_owner_id_windows" {
-  description = "The ID of the owner for the AMI to use for the AWS EKS Windows workers. Valid values are an AWS account ID, 'self' (the current account), or an AWS owner alias (e.g. 'amazon', 'aws-marketplace', 'microsoft')."
-  type        = string
-  default     = "801119661308" // The ID of the owner of the official AWS EKS Windows AMIs.
-}
+# variable "worker_ami_owner_id_windows" {
+#   description = "The ID of the owner for the AMI to use for the AWS EKS Windows workers. Valid values are an AWS account ID, 'self' (the current account), or an AWS owner alias (e.g. 'amazon', 'aws-marketplace', 'microsoft')."
+#   type        = string
+#   default     = "801119661308" // The ID of the owner of the official AWS EKS Windows AMIs.
+# }
 
-variable "worker_additional_security_group_ids" {
-  description = "A list of additional security group ids to attach to worker instances"
-  type        = list(string)
-  default     = []
-}
+# variable "worker_additional_security_group_ids" {
+#   description = "A list of additional security group ids to attach to worker instances"
+#   type        = list(string)
+#   default     = []
+# }
 
 variable "worker_sg_ingress_from_port" {
   description = "Minimum port number from which pods will accept communication. Must be changed to a lower value if some pods in your cluster will expose a port lower than 1025 (e.g. 22, 80, or 443)."
@@ -149,11 +149,11 @@ variable "worker_sg_ingress_from_port" {
   default     = 1025
 }
 
-variable "workers_additional_policies" {
-  description = "Additional policies to be added to workers"
-  type        = list(string)
-  default     = []
-}
+# variable "workers_additional_policies" {
+#   description = "Additional policies to be added to workers"
+#   type        = list(string)
+#   default     = []
+# }
 
 variable "kubeconfig_aws_authenticator_command" {
   description = "Command to use to fetch AWS EKS credentials."
