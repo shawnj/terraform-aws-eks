@@ -181,11 +181,46 @@ module "vpc" {
   }
 }
 
+## Required for Enabling encryption on Cluster Secrets
+resource "aws_kms_key" "eks" {
+  description = "EKS-Test Secret Encryption Key"
+}
+
+resource "aws_kms_alias" "alias" {
+  name          = "alias/eks-test-secret-key"
+  target_key_id = aws_kms_key.eks.key_id
+}
+
+resource "tls_private_key" "ssh_key" {
+  algorithm = "RSA"
+}
+
+module "key_pair" {
+  source = "terraform-aws-modules/key-pair/aws"
+
+  key_name        = "${local.cluster_name}"
+  public_key      = tls_private_key.ssh_key.public_key_openssh
+  create_key_pair = true
+}
+
 module "eks" {
   source          = "./eks"
   cluster_name    = local.cluster_name
-  cluster_version = "1.17"
+  cluster_version = "1.16"
+  cluster_endpoint_public_access        = false
+  cluster_endpoint_private_access       = true
+  cluster_endpoint_private_access_cidrs = [
+    "172.16.0.0/16",
+    "172.20.0.0/16"
+  ]
   subnets         = module.vpc.private_subnets
+
+  cluster_encryption_config = [
+    {
+      provider_key_arn = aws_kms_key.eks.arn
+      resources        = ["secrets"]
+    }
+  ]
 
   tags = {
     Environment = "test"
@@ -197,7 +232,8 @@ module "eks" {
 
   node_groups_defaults = {
     ami_type  = "AL2_x86_64"
-    disk_size = 50
+    disk_size = 100
+    key_name = module.key_pair.this_key_pair_key_name
   }
 
   node_groups = {
@@ -207,6 +243,7 @@ module "eks" {
       min_capacity     = 1
 
       instance_type = "t3.micro"
+      
       k8s_labels = {
         Environment = "test"
         GithubRepo  = "terraform-aws-eks"
