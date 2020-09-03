@@ -78,6 +78,7 @@ locals {
     # Settings for launch templates
     root_block_device_name               = data.aws_ami.eks_worker.root_device_name # Root device name for workers. If non is provided, will assume default AMI was used.
     root_kms_key_id                      = ""                                       # The KMS key to use when encrypting the root storage device
+    launch_template_id                   = ""                                       # The id of the launch template used for managed node_groups
     launch_template_version              = "$Latest"                                # The lastest version of the launch template to use in the autoscaling group
     launch_template_placement_tenancy    = "default"                                # The placement tenancy for instances
     launch_template_placement_group      = null                                     # The name of the placement group into which to launch the instances, if any.
@@ -151,4 +152,22 @@ locals {
     aws_authenticator_additional_args = var.kubeconfig_aws_authenticator_additional_args
     aws_authenticator_env_variables   = var.kubeconfig_aws_authenticator_env_variables
   }) : ""
+  
+  # Merge defaults and per-group values to make code cleaner
+  node_groups_expanded = { for k, v in var.node_groups : k => merge(
+    {
+      desired_capacity        = local.workers_group_defaults["asg_desired_capacity"]
+      #iam_role_arn            = var.default_iam_role_arn
+      instance_type           = local.workers_group_defaults["instance_type"]
+      key_name                = local.workers_group_defaults["key_name"]
+      launch_template_id      = local.workers_group_defaults["launch_template_id"]
+      launch_template_version = local.workers_group_defaults["launch_template_version"]
+      max_capacity            = local.workers_group_defaults["asg_max_size"]
+      min_capacity            = local.workers_group_defaults["asg_min_size"]
+      subnets                 = local.workers_group_defaults["subnets"]
+    },
+    var.node_groups_defaults,
+    v,
+  ) if var.create_eks }
+
 }

@@ -3,7 +3,7 @@ terraform {
 }
 
 provider "aws" {
-  version = ">= 2.28.1"
+  version = ">= 3.3.0"
   region  = var.region
 }
 
@@ -29,6 +29,59 @@ data "aws_eks_cluster" "cluster" {
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
+}
+
+variable "region" {
+  default = "us-west-2"
+}
+
+variable "map_accounts" {
+  description = "Additional AWS account numbers to add to the aws-auth configmap."
+  type        = list(string)
+
+  default = [
+    "777777777777",
+    "888888888888",
+  ]
+}
+
+variable "map_roles" {
+  description = "Additional IAM roles to add to the aws-auth configmap."
+  type = list(object({
+    rolearn  = string
+    username = string
+    groups   = list(string)
+  }))
+
+  default = [
+    {
+      rolearn  = "arn:aws:iam::66666666666:role/role1"
+      username = "role1"
+      groups   = ["system:masters"]
+    },
+  ]
+}
+
+variable "map_users" {
+  description = "Additional IAM users to add to the aws-auth configmap."
+  type = list(object({
+    userarn  = string
+    username = string
+    groups   = list(string)
+  }))
+
+  default = [
+    {
+      userarn  = "arn:aws:iam::66666666666:user/user1"
+      username = "user1"
+      groups   = ["system:masters"]
+    },
+    {
+      userarn  = "arn:aws:iam::66666666666:user/user2"
+      username = "user2"
+      groups   = ["system:masters"]
+    },
+  ]
 }
 
 provider "kubernetes" {
@@ -76,7 +129,7 @@ module "vpc" {
 }
 
 module "eks" {
-  source          = "../.."
+  source          = "./eks"
   cluster_name    = local.cluster_name
   cluster_version = "1.17"
   subnets         = module.vpc.private_subnets
@@ -97,10 +150,10 @@ module "eks" {
   node_groups = {
     example = {
       desired_capacity = 1
-      max_capacity     = 10
+      max_capacity     = 3
       min_capacity     = 1
 
-      instance_type = "m5.large"
+      instance_type = "t3.micro"
       k8s_labels = {
         Environment = "test"
         GithubRepo  = "terraform-aws-eks"
